@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Touching velvet with your eyes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <script>
+// -- https://xemantic.github.io/shader-web-background/
+const shaderWebBackground={};(()=>{'use strict';const t=(a,b)=>{b.initHalfFloatRGBATexture(b.width,b.height);a.texParameteri(a.TEXTURE_2D,
+a.TEXTURE_MIN_FILTER,a.LINEAR);a.texParameteri(a.TEXTURE_2D,a.TEXTURE_MAG_FILTER,
+a.LINEAR);a.texParameteri(a.TEXTURE_2D,a.TEXTURE_WRAP_S,a.CLAMP_TO_EDGE);a.texParameteri(a.TEXTURE_2D,
+a.TEXTURE_WRAP_T,a.CLAMP_TO_EDGE)},x=(a,b)=>{console.warn("shader-web-background cannot shade, adding fallback CSS classes");
+document.documentElement.classList.add("shader-web-background-fallback");b.classList.add("shader-web-background-fallback");
+if(a instanceof shaderWebBackground.GlError)console.warn("Not sufficient WebGL support:",
+a);else throw a;};
+function y(a,b){if(!a)throw new shaderWebBackground.ConfigError(b);}
+function z(a){y(a instanceof HTMLCanvasElement,"config.canvas must be instance of canvas");
+return a}
+function A(){const a=document.createElement("canvas"),b=a.style;a.id="shader-web-background";b.width=
+"100vw";b.height="100vh";b.position="fixed";b.top="0";b.left="0";b.zIndex=-9999;return a}
+function B(a,b,c){y(a instanceof HTMLScriptElement&&a.type===b,'Shader source element of id "'+
+c+'" should be of type: <script type="'+(b+'" id="'+c+'">'))}
+function D(a){const b=document.getElementById(a);y(b,'Missing shader source: <script type="x-shader/x-fragment" id="'+
+(a+'">'));B(b,"x-shader/x-fragment",a);return b.text}
+function E(a){a+="Vertex";const b=document.getElementById(a);return b?(B(b,"x-shader/x-vertex",
+a),b.text):"attribute vec2 V;void main(){gl_Position=vec4(V,0,1);}"}
+function F(a,b){"loading"!==document.readyState?b():window.addEventListener(a,b)}
+class G{constructor(a,b,c,d){this.g=c;const l=a.gl;this.h=()=>{for(const f of d)f.u(l,
+f.location,b)};this.i=()=>{var f=c.v,h=a.gl;h.bindBuffer(h.ARRAY_BUFFER,a.j);h.enableVertexAttribArray(f);
+h.vertexAttribPointer(f,2,h.FLOAT,!1,0,0);h.drawArrays(h.TRIANGLE_STRIP,0,4);h.disableVertexAttribArray(f);
+h.bindBuffer(h.ARRAY_BUFFER,null);f=a.gl;for(h=0;h<a.g;h++)f.activeTexture(f.TEXTURE0+
+h),f.bindTexture(f.TEXTURE_2D,null);a.g=0}}}
+function H(a){var b={antialias:!1,depth:!1,alpha:!1};try{return new I(a,b)}catch(c){throw new shaderWebBackground.GlError(c.message);
+}}
+function J(a,b,c,d,l,f){function h(e,m,n){try{{var k=p;const q=k.gl,P=K(k,e,q.VERTEX_SHADER,m),
+Q=K(k,e,q.FRAGMENT_SHADER,n),v=q.createProgram();q.attachShader(v,P);q.attachShader(v,
+Q);q.linkProgram(v);var r=v}return r}catch(q){throw new shaderWebBackground.ConfigError(q.message);
+}}const p=H(a),w=[],g={gl:p.gl,canvas:a,width:0,height:0,cssPixelRatio:0,cssWidth:0,
+cssHeight:0,isOverShader:(e,m)=>{const n=a.getBoundingClientRect();return e>=n.left&&
+e<=n.right&&m>=n.top&&m<=n.bottom},toShaderX:e=>(e-a.getBoundingClientRect().left)*
+g.cssPixelRatio+.5,toShaderY:e=>a.height-(e-a.getBoundingClientRect().top)*g.cssPixelRatio-
+.5,s:()=>g.cssWidth!==a.clientWidth||g.cssHeight!==a.clientHeight?(g.resize(),!0):
+!1,resize:()=>{const e=window.devicePixelRatio||1,m=a.clientWidth,n=a.clientHeight,
+k=Math.floor(m*e),r=Math.floor(n*e);a.width=k;a.height=r;g.width=k;g.height=r;g.cssPixelRatio=
+e;g.cssWidth=m;g.cssHeight=n;p.gl.viewport(0,0,p.canvas.width,p.canvas.height);for(const q of w)q.g.l(k,
+r)},texture:(e,m)=>{{var n=p;const k=n.gl;m=m instanceof L?m.g:m;k.activeTexture(k.TEXTURE0+
+n.g);k.bindTexture(k.TEXTURE_2D,m);k.uniform1i(e,n.g++)}},buffers:{},initHalfFloatRGBATexture:(e,
+m)=>{p.h.g(e,m)}},R=Object.keys(b).length-1;let S=0;for(const e in b){if(S++<R){const k=
+b[e].texture||t;g.buffers[e]=M(p,()=>{k(p.gl,g)})}const m=N(p,h(e,E(e),D(e)),g.buffers[e]),
+n=b[e].uniforms||{};var u=Object.keys(n);for(const k of m.m)y(n[k.name],'No configuration for uniform "'+
+k.name+'" defined in shader "'+e+'"'),u=u.filter(r=>r!==k.name);0!==u.length&&console.warn('Extra uniforms configured for shader "'+
+e+'", which are not present in the shader code - might have been removed by GLSL compiler if not used: '+
+u.join(", "));u=m.m.map(k=>({location:k.location,u:n[k.name]}));w.push(new G(p,g,
+m,u))}const C=()=>{g.s()&&d&&d(g.width,g.height,g);l&&l(g);for(const e of w)e.g.i(e.h,
+e.i);f&&f(g);requestAnimationFrame(C)};F("load",()=>{g.resize();c&&c(g);d&&d(g.width,
+g.height,g);requestAnimationFrame(C)});return g}
+shaderWebBackground.Error=class extends Error{constructor(a){super(a);this.name="shaderWebBackground.Error"}};
+shaderWebBackground.ConfigError=class extends shaderWebBackground.Error{constructor(a){super(a);
+this.name="shaderWebBackground.ConfigError"}};
+shaderWebBackground.GlError=class extends shaderWebBackground.Error{constructor(a){super(a);this.name=
+"shaderWebBackground.GlError"}};
+shaderWebBackground.shade=function(a){y(a,"Missing config argument");const b=a.canvas?
+z(a.canvas):A();y(a.shaders,"No shaders specified in config");try{const c=J(b,a.shaders,
+a.onInit,a.onResize,a.onBeforeFrame,a.onAfterFrame);a.canvas||F("DOMContentLoaded",
+()=>{document.body.appendChild(b)});return c}catch(c){(a.onError||x)(c,b)}};const O=[-1,1,1,1,-1,-1,1,-1];
+function T(a,b){return a.j(a.gl.getExtension(b),b+" extension is not supported")}
+class U{constructor(a,b){this.gl=a;this.j=b}g(){}}
+class V extends U{constructor(a,b){super(a,b);this.h=T(this,"OES_texture_half_float");
+T(this,"OES_texture_half_float_linear")}g(a,b){const c=this.gl;c.texImage2D(c.TEXTURE_2D,
+0,c.RGBA,a,b,0,c.RGBA,this.h.HALF_FLOAT_OES,null)}}
+class W extends U{constructor(a,b){super(a,b);T(this,"EXT_color_buffer_float");this.gl.getExtension("OES_texture_float_linear")}g(a,
+b){const c=this.gl;c.texImage2D(c.TEXTURE_2D,0,c.RGBA16F,a,b,0,c.RGBA,c.HALF_FLOAT,
+null)}}
+function X(a){a=a.split(/\r?\n/);const b=a.length.toString().length;var c=[];a.forEach((d,
+l)=>{l=(l+1).toString();l=l.length>=b?l:" ".repeat(b-l.length)+l;c.push(l+": "+d+
+"\n")});return c.join("")}function M(a,b){return new L(a.gl,()=>{b(a.gl)})}
+function N(a,b,c){const d=a.gl;a=[];const l=d.getProgramParameter(b,d.ACTIVE_UNIFORMS);
+for(let f=0;f<l;f++){const h=d.getActiveUniform(b,f);a.push({name:h.name,location:d.getUniformLocation(b,
+h.name)})}return{v:d.getAttribLocation(b,"V"),m:a,l:c?(f,h)=>c.l(f,h):()=>{},i:(f,
+h)=>{d.useProgram(b);f();c?(f=c.g,c.g=c.h,c.h=f,c.i(h)):h()}}}
+function K(a,b,c,d){a=a.gl;c=a.createShader(c);a.shaderSource(c,d);a.compileShader(c);
+if(!a.getShaderParameter(c,a.COMPILE_STATUS)){const l=String(a.getShaderInfoLog(c));
+a.deleteShader(c);b="Cannot compile shader - "+b+": "+l;console.log(b);console.log(X(d));
+throw Error(b);}return c}
+class I{constructor(a,b){this.canvas=a;const c=(l,f)=>{if(!l)throw Error(f);return l};
+let d=a.getContext("webgl2",b);if(d)this.h=new W(d,c);else if(d=a.getContext("webgl",
+b))this.h=new V(d,c);c(d,"webgl context not supported on supplied canvas element: "+
+a);this.gl=d;a=d.createBuffer();d.bindBuffer(d.ARRAY_BUFFER,a);d.bufferData(d.ARRAY_BUFFER,
+new Float32Array(O),d.STATIC_DRAW);d.bindBuffer(d.ARRAY_BUFFER,null);this.j=a;this.buffers=
+{};this.g=0}}
+function Y(a){const b=a.gl,c=b.createTexture();b.bindTexture(b.TEXTURE_2D,c);a.o(b);
+b.bindTexture(b.TEXTURE_2D,null);return c}
+class L{constructor(a,b){this.j=a.createFramebuffer();this.gl=a;this.o=b;this.g=this.h=
+null}l(){this.h&&this.gl.deleteTexture(this.h);this.g&&this.gl.deleteTexture(this.g);
+this.h=Y(this);this.g=Y(this)}i(a){const b=this.gl;b.bindFramebuffer(b.FRAMEBUFFER,
+this.j);b.framebufferTexture2D(b.FRAMEBUFFER,b.COLOR_ATTACHMENT0,b.TEXTURE_2D,this.g,
+0);a();b.framebufferTexture2D(b.FRAMEBUFFER,b.COLOR_ATTACHMENT0,b.TEXTURE_2D,null,
+0);b.bindFramebuffer(b.FRAMEBUFFER,null)}};})()
+//# sourceMappingURL=../dist/shader-web-background.min.js.map
+  </script>
+  <script>
+    // spectral_zucconi6 by Alan Zucconi rewritten from GLSL to JS by Kazik Pogoda
+    // GLSL: https://www.shadertoy.com/view/ls2Bz1
+
+    const ONE_IN_3D = [1, 1, 1];
+    const c1 = [3.54585104, 2.93225262, 2.41593945];
+    const x1 = [0.69549072, 0.49228336, 0.27699880];
+    const y1 = [0.02312639, 0.15225084, 0.52607955];
+    const c2 = [3.90307140, 3.21182957, 3.96587128];
+    const x2 = [0.11748627, 0.86755042, 0.66077860];
+    const y2 = [0.84897130, 0.88445281, 0.73949448];
+    const saturate = (x) => Math.min(Math.max(x, 0), 1);
+    const to3d = (x) => [x, x, x];
+    const add3d = (x, y) => [x[0] + y[0], x[1] + y[1], x[2] + y[2]];
+    const subtract3d = (x, y) => [x[0] - y[0], x[1] - y[1], x[2] - y[2]];
+    const multiply3d = (x, y) => [x[0] * y[0], x[1] * y[1], x[2] * y[2]];
+    const pow23d = (x) => multiply3d(x, x);
+    const saturate3d = (x) => [saturate(x[0]), saturate(x[1]), saturate(x[2])];
+    const bump3y = (x, yoffset) => saturate3d(subtract3d(subtract3d(ONE_IN_3D, pow23d(x)), yoffset));
+    const spectral_zucconi6 = (x) => add3d(bump3y(multiply3d(c1, subtract3d(to3d(x), x1)), y1), bump3y(multiply3d(c2, subtract3d(to3d(x), x2)), y2));
+  </script>
+  <script type="x-shader/x-fragment" id="feedback">
+    precision highp float;
+
+    uniform vec2      iResolution;
+    uniform float     iMinDimension;
+    uniform sampler2D iChannel0;
+    uniform sampler2D iChannel1;
+    uniform vec2      iScreenRatioHalf;
+    uniform vec2      iFeedbackZoomCenter;
+    uniform float     iFeedbackZoomRate;
+    uniform vec2      iFeedbackShiftVector;
+    uniform float     iFeedbackFadeRate;
+    uniform float     iFeedbackColorShiftZoom;
+    uniform float     iFeedbackColorShiftImpact;
+    uniform vec2      iDrawCenter;
+    uniform float     iDrawIntensity;
+    uniform float     iBlobRadius;
+    uniform float     iBlobSmoothingRadius;
+    uniform float     iBlobPowFactor;
+    uniform vec3      iBlobColor;
+    uniform float     iTime;
+
+    const float PI = 3.14159265359;
+
+    /*
+      Normally it would be provided by texture parameters, but on iOS the texture REPEAT works only
+      for textures which size is the power of 2.
+     */
+    vec4 repeatedTexture(in sampler2D channel, in vec2 uv) {
+      return texture2D(channel, mod(uv, 1.));
+    }
+
+    void main() {
+      vec2 uv = gl_FragCoord.xy / iResolution;
+      vec2 st = (gl_FragCoord.xy * 2. - iResolution) / iMinDimension;
+      float angle = atan(st.x, st.y);
+      float fft = texture2D(iChannel1, vec2(1. - (abs(angle) / PI), .25)).r;
+      float wave = texture2D(iChannel1, vec2(1. - (abs(angle) / PI), .75)).r;
+
+      float drawDist = length(st - iDrawCenter);
+      drawDist += (wave - .5) * drawDist * .5;
+
+      vec3 colorShift = repeatedTexture(
+      iChannel0,
+        uv - st * iFeedbackColorShiftZoom * iScreenRatioHalf
+      ).rgb;
+
+      vec2 stShift = vec2(0);
+      stShift += iFeedbackZoomRate * (st - iFeedbackZoomCenter);
+      stShift += (colorShift.rg - .4) * iFeedbackColorShiftImpact * vec2(sin(iTime * .3), cos(iTime * .3));
+      stShift += iFeedbackShiftVector;
+      stShift *= iScreenRatioHalf;
+
+      vec3 prevColor = repeatedTexture(iChannel0, uv - stShift * (1. + fft * 3.)).rgb;
+      prevColor *= iFeedbackFadeRate;
+
+      vec3 drawColor = vec3(0);
+      float blobShape =
+        pow((drawDist) / iBlobRadius, iBlobPowFactor)
+        * smoothstep(iBlobRadius, iBlobSmoothingRadius, drawDist);
+
+      drawColor += blobShape * iBlobColor;
+
+      vec3 color = vec3(0);
+      drawColor *= iDrawIntensity;
+      color += prevColor;
+      color += drawColor;
+
+      color = clamp(color, 0., 1.);
+      gl_FragColor = vec4(color, 1.);
+    }
+  </script>
+  <script type="x-shader/x-fragment" id="image">
+    precision highp float;
+
+    uniform vec2  iResolution;
+    uniform float iMinDimension;
+    uniform vec2  iDrawCenter;
+    uniform float iSphereRadius;
+    uniform float iSphereSmoothingRadius;
+    uniform vec3  iSphereColor;
+
+    uniform sampler2D iChannel0;
+    uniform sampler2D iChannel1;
+
+    const float PI = 3.14159265359;
+
+    void main(){
+      vec2 st = (gl_FragCoord.xy * 2. - iResolution) / iMinDimension;
+      float angle = atan(st.x, st.y);
+      float fft = texture2D(iChannel1, vec2(1. - (abs(angle) / PI), .25)).r;
+      float wave = texture2D(iChannel1, vec2(1. - (abs(angle) / PI), .75)).r;
+
+      float drawDist = length(st - iDrawCenter);
+      drawDist += (wave - .5) * drawDist * .5;
+      float shape =
+        pow(drawDist, 1.2)
+        * smoothstep(iSphereRadius, iSphereSmoothingRadius, drawDist);
+      vec3 color = vec3(0);
+      color += texture2D(iChannel0, gl_FragCoord.xy / iResolution).rgb;
+      color += shape * iSphereColor;
+      gl_FragColor = vec4(color, 1.);
+    }
+  </script>
+  <script>
+    const FREQUENCY_BIN_COUNT = 512;
+    const freqData = new Uint8Array(FREQUENCY_BIN_COUNT);
+    const waveData = new Uint8Array(FREQUENCY_BIN_COUNT);
+    const audioPixels = new Uint8Array(FREQUENCY_BIN_COUNT * 2 * 4);
+
+    let analyser;
+    let audioTexture;
+
+    function initAudio() {
+      const playAction = document.getElementById("play-action");
+      const audio = document.getElementById("audio-track");
+      audio.addEventListener("play", (event) => {
+        if (!analyser) {
+          const context = new (window.AudioContext || window.webkitAudioContext)();
+          const source = context.createMediaElementSource(audio);
+          analyser = context.createAnalyser();
+          source.connect(analyser);
+          analyser.connect(context.destination);
+        }
+      });
+      playAction.onclick = () => {
+        playAction.remove();
+        audio.play();
+      }
+    }
+
+    function initAudioTexture(gl) {
+      audioTexture = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, audioTexture);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.RGBA,
+        FREQUENCY_BIN_COUNT,
+        2,
+        0,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        audioPixels
+      );
+      gl.bindTexture(gl.TEXTURE_2D, null);
+    }
+
+    function setAudioTexture(yoffset, data) {
+      let offset = (yoffset * FREQUENCY_BIN_COUNT * 4);
+      for (let i = 0; i < FREQUENCY_BIN_COUNT; i++) {
+        const value = data[i];
+        for (let j = 0; j < 3; j++) {
+          audioPixels[offset++] = value;
+        }
+        audioPixels[offset++] = 255;
+      }
+    }
+
+    function updateAudioTexture(gl) {
+      if (!analyser) {
+        return;
+      }
+      analyser.getByteFrequencyData(freqData);
+      analyser.getByteTimeDomainData(waveData);
+      setAudioTexture(0, freqData);
+      setAudioTexture(1, waveData);
+
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, audioTexture);
+      gl.texSubImage2D(
+        gl.TEXTURE_2D, 0, 0, 0, FREQUENCY_BIN_COUNT, 2, gl.RGBA, gl.UNSIGNED_BYTE, audioPixels
+      );
+      gl.bindTexture(gl.TEXTURE_2D, null);
+    }
+
+    const controlsTable = document.createElement("table");
+
+    function addControl(caption, initialValue, minValue, maxValue, updater) {
+      const tr = document.createElement("tr");
+      const tdCaption = document.createElement("td");
+      const tdValue = document.createElement("td");
+      const tdSlider = document.createElement("td");
+      const input = document.createElement("input");
+      input.className = "slider";
+      input.type = "range";
+      input.min = minValue;
+      input.max = maxValue;
+      input.step = "any";
+      value = initialValue;
+      input.oninput = () => {
+        const value = input.value;
+        updater(input.value);
+        tdValue.innerText = Number(value).toFixed(3);
+      };
+      tdCaption.innerText = caption;
+      tdValue.innerText = value;
+      tdSlider.appendChild(input);
+      tr.appendChild(tdCaption);
+      tr.appendChild(tdValue);
+      tr.appendChild(tdSlider);
+      controlsTable.appendChild(tr);
+      updater(initialValue);
+    }
+
+    var time;
+
+    var minDimension;
+    var screenRatioHalfX;
+    var screenRatioHalfY;
+
+    var mouseX;
+    var mouseY;
+
+    var stMouseX;
+    var stMouseY;
+
+    var tiltLR = 0;
+    var tiltFB = 0;
+    var tiltFBDelta = null;
+
+    var feedbackShiftVectorX;
+    var feedbackShiftVectorY;
+
+    var oldScrollY;
+
+    let drawCenterX;
+    let drawCenterY;
+
+    const GOLDEN_RATIO = .61803398875;
+    const feedbackMouseShiftFactor = .001;
+    const feedbackTiltShiftFactor = .000063;
+    const backgroundParallaxScrollingFactor = .5;
+    let blobColorPulseSpeed;
+    const drawCenterShiftDownScale = .99;
+
+    const blobRadius = GOLDEN_RATIO;
+    const sphereRadius = GOLDEN_RATIO;
+    const blobEdgeSmoothing = .01;
+    const sphereEdgeSmoothing = .01;
+    const blobSmoothingRadius = blobRadius - blobEdgeSmoothing;
+    const sphereSmoothingRadius = sphereRadius - sphereEdgeSmoothing;
+
+    var blobColor;
+
+    document.addEventListener("mousemove", (event) => {
+       mouseX = event.clientX;
+       mouseY = event.clientY;
+    });
+
+    addControl("blob color pulse speed", .07, 0.01, .1, (v) => { blobColorPulseSpeed = v });
+    addControl("draw center X", 0, -1, 1, (v) => { drawCenterX = v });
+    addControl("draw center Y", 0, -1, 1, (v) => { drawCenterY = v });
+
+    shaderWebBackground.shade({
+      onInit: (ctx) => {
+        mouseX = ctx.cssWidth / 2.;
+        mouseY = ctx.cssHeight / 2.;
+        oldScrollY = window.scrollY;
+        drawCenterX = 0;
+        drawCenterY = 0;
+        initAudioTexture(ctx.gl);
+        initAudio();
+        document.getElementById("controls").appendChild(controlsTable);
+      },
+      onResize: (width, height) => {
+        minDimension = Math.min(width, height);
+        if (width >= height) {
+          screenRatioHalfX = height / width * .5;
+          screenRatioHalfY = .5;
+        } else {
+          screenRatioHalfX = .5;
+          screenRatioHalfY = width / height * .5;
+        }
+      },
+      onBeforeFrame: (ctx) => {
+        stMouseX = (2 * ctx.toShaderX(mouseX) - ctx.width) / minDimension;
+        stMouseY = (2 * ctx.toShaderY(mouseY) - ctx.height) / minDimension;
+        time = performance.now() / 1000;
+        const scrollY = window.scrollY;
+        const scrollYDelta = scrollY - oldScrollY;
+        if (scrollYDelta === 0) {
+          feedbackShiftVectorY = 0;
+        } else {
+          feedbackShiftVectorY =
+            scrollYDelta / minDimension
+            * 2 * ctx.cssPixelRatio
+            * backgroundParallaxScrollingFactor;
+          drawCenterY += feedbackShiftVectorY;
+        }
+        oldScrollY = scrollY;
+        if (tiltFBDelta) { // we have device orientation readings, better than mouse
+          feedbackShiftVectorX = tiltLR * feedbackTiltShiftFactor;
+          feedbackShiftVectorY += tiltFB * -feedbackTiltShiftFactor;
+        } else {
+          feedbackShiftVectorX = stMouseX * feedbackMouseShiftFactor;
+          feedbackShiftVectorY += stMouseY * feedbackMouseShiftFactor;
+        }
+        blobColor = spectral_zucconi6((time * blobColorPulseSpeed) % 1);
+        updateAudioTexture(ctx.gl);
+      },
+      shaders: {
+        feedback: {
+          uniforms: {
+            iResolution:               (gl, loc, ctx) => gl.uniform2f(loc, ctx.width, ctx.height),
+            iMinDimension:             (gl, loc) => gl.uniform1f(loc, minDimension),
+            iScreenRatioHalf:          (gl, loc) => gl.uniform2f(loc, screenRatioHalfX, screenRatioHalfY),
+            iFeedbackZoomCenter:       (gl, loc) => gl.uniform2f(loc, 0, 0),
+            iFeedbackZoomRate:         (gl, loc) => gl.uniform1f(loc, .0004),
+            iFeedbackShiftVector:      (gl, loc) => gl.uniform2f(loc, feedbackShiftVectorX, feedbackShiftVectorY),
+            iFeedbackFadeRate:         (gl, loc) => gl.uniform1f(loc, .9999),
+            iFeedbackColorShiftZoom:   (gl, loc) => gl.uniform1f(loc, .07),
+            iFeedbackColorShiftImpact: (gl, loc) => gl.uniform1f(loc, .003),
+            iDrawCenter:               (gl, loc) => gl.uniform2f(loc, drawCenterX, drawCenterY),
+            iDrawIntensity:            (gl, loc) => gl.uniform1f(loc, .012),
+            iBlobRadius:               (gl, loc) => gl.uniform1f(loc, blobRadius),
+            iBlobSmoothingRadius:      (gl, loc) => gl.uniform1f(loc, blobSmoothingRadius),
+            iBlobPowFactor:            (gl, loc) => gl.uniform1f(loc, 14.),
+            iBlobColor:                (gl, loc) => gl.uniform3f(loc, blobColor[0], blobColor[1], blobColor[2]),
+            iTime:                     (gl, loc) => gl.uniform1f(loc, time),
+            iChannel0:                 (gl, loc, ctx) => ctx.texture(loc, ctx.buffers.feedback),
+            iChannel1:                 (gl, loc, ctx) => ctx.texture(loc, audioTexture)
+          }
+        },
+        image: {
+          uniforms: {
+            iResolution:               (gl, loc, ctx) => gl.uniform2f(loc, ctx.width, ctx.height),
+            iMinDimension:             (gl, loc) => gl.uniform1f(loc, minDimension),
+            iDrawCenter:               (gl, loc) => gl.uniform2f(loc, drawCenterX, drawCenterY),
+            iSphereRadius:             (gl, loc) => gl.uniform1f(loc, sphereRadius),
+            iSphereSmoothingRadius:    (gl, loc) => gl.uniform1f(loc, sphereSmoothingRadius),
+            iSphereColor:              (gl, loc) => gl.uniform3f(loc, .114, .224, .627),
+            iChannel0:                 (gl, loc, ctx) => ctx.texture(loc, ctx.buffers.feedback),
+            iChannel1:                 (gl, loc, ctx) => ctx.texture(loc, audioTexture)
+          }
+        }
+      },
+      onAfterFrame: () => {
+        drawCenterY *= drawCenterShiftDownScale;
+      },
+      onError: (error, canvas) => {
+        document.documentElement.classList.add("fallback-background");
+        if (error instanceof shaderWebBackground.GlError) {
+          console.log("Could not shade, adding fallback CSS classes:", error);
+          // in regular web design we would just silently switch to fallback style
+          window.alert(
+            "The shader-web-background does not support your device/browser, therefore "
+              + "you cannot experience what is described here, try with another device");
+        } else {
+          throw error;
+        }
+      }
+    });
+  </script>
+  <style>
+    .shader-web-background-fallback {
+      background: url("https://placekitten.com/666/666");
+      background-position: center;
+      background-size: cover;
+      background-attachment: fixed;
+    }
+    *, *:before, *:after {
+      box-sizing: inherit;
+    }
+    html {
+      box-sizing: border-box;
+      background: black;
+      font-size: calc(16px + .8vw);
+      font-family: sans-serif;
+      scroll-behavior: smooth;
+      line-height: 2em;
+    }
+    body {
+      color: white;
+      overflow-x: hidden;
+    }
+    header {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      text-align: center;
+    }
+    body, h1, h2, p, ul, blockquote, button {
+      margin: 0;
+      padding: 0;
+    }
+    a {
+      color: white;
+      text-decoration: none;
+      transition: text-shadow 0.2s linear;
+    }
+    a:hover {
+      text-shadow: 0 0 3rem yellow;
+    }
+    header {
+      position: relative;
+    }
+    header h1 {
+      font-size: 3em;
+    }
+    header input {
+      font-size: 2em;
+      margin: 1.3em;
+      border: .05em solid;
+    }
+    header input:hover {
+      animation: shake 0.5s;
+      animation-iteration-count: infinite;
+    }
+    footer {
+      text-align: center;
+      min-height: 5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #controls {
+      text-align: center;
+      margin-top: -2rem;
+      background: rgba(0, 0, 0, .5);
+    }
+
+    #controls-action {
+      width: 100%;
+      height: 2rem;
+    }
+
+    #controls table {
+      width: 100%;
+    }
+
+    #controls table td:nth-of-type(3) {
+      width: auto;
+    }
+
+    #play-action {
+      font-size: 10rem;
+    }
+
+    #audio-track {
+      width: 100%;
+    }
+
+    .slider {
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a id="play-action" href="#">►</a>
+  </header>
+  <section id="controls">
+    <a id="controls-action" href="#">≡</a>
+    <audio id="audio-track" controls loop>
+      <source src="media/Igorrr_and_Ruby_My_Dear-Cuisse.mp3" type="audio/mpeg">
+    </audio>
+  </section>
+  <footer>
+    Music by <a href="https://igorrr.com/">Igorrr</a> and
+    <a href="https://twitter.com/rubymydear_">Ruby My Dear</a><br/>
+    Copyright &copy; 2021 Kazimierz Pogoda / <a href="https://xemantic.com/">xemantic.com</a>
+  </footer>
+</body>
+</html>

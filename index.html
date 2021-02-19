@@ -169,7 +169,7 @@ this.j);b.framebufferTexture2D(b.FRAMEBUFFER,b.COLOR_ATTACHMENT0,b.TEXTURE_2D,th
 
       vec2 stShift = vec2(0);
       stShift += iFeedbackZoomRate * (st - iFeedbackZoomCenter);
-      stShift += (colorShift.rg - .4) * iFeedbackColorShiftImpact * vec2(sin(iTime * .3), cos(iTime * .3));
+      stShift += (colorShift.rg - .4) * iFeedbackColorShiftImpact * vec2(sin(iTime * .3), cos(iTime * .3) * (1. + fft * 6.));
       stShift += iFeedbackShiftVector;
       stShift *= iScreenRatioHalf;
 

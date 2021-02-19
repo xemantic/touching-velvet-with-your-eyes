@@ -374,9 +374,14 @@ this.j);b.framebufferTexture2D(b.FRAMEBUFFER,b.COLOR_ATTACHMENT0,b.TEXTURE_2D,th
        mouseY = event.clientY;
     });
 
-    addControl("blob color pulse speed", .07, 0.01, .1, (v) => { blobColorPulseSpeed = v });
-    addControl("draw center X", 0, -1, 1, (v) => { drawCenterX = v });
-    addControl("draw center Y", 0, -1, 1, (v) => { drawCenterY = v });
+    let feedbackFadeRate;
+
+    addControl("blob color pulse speed",  .07,    0.01,   .1, (v) => { blobColorPulseSpeed = v });
+    addControl("draw center X",           0,      -1,     1,  (v) => { drawCenterX = v });
+    addControl("draw center Y",           0,      -1,     1,  (v) => { drawCenterY = v });
+    addControl("feedback fade rate",      .9999,  .99,    1., (v) => { feedbackFadeRate = v });
+
+
 
     shaderWebBackground.shade({
       onInit: (ctx) => {
@@ -434,7 +439,7 @@ this.j);b.framebufferTexture2D(b.FRAMEBUFFER,b.COLOR_ATTACHMENT0,b.TEXTURE_2D,th
             iFeedbackZoomCenter:       (gl, loc) => gl.uniform2f(loc, 0, 0),
             iFeedbackZoomRate:         (gl, loc) => gl.uniform1f(loc, .0004),
             iFeedbackShiftVector:      (gl, loc) => gl.uniform2f(loc, feedbackShiftVectorX, feedbackShiftVectorY),
-            iFeedbackFadeRate:         (gl, loc) => gl.uniform1f(loc, .9999),
+            iFeedbackFadeRate:         (gl, loc) => gl.uniform1f(loc, feedbackFadeRate),
             iFeedbackColorShiftZoom:   (gl, loc) => gl.uniform1f(loc, .07),
             iFeedbackColorShiftImpact: (gl, loc) => gl.uniform1f(loc, .003),
             iDrawCenter:               (gl, loc) => gl.uniform2f(loc, drawCenterX, drawCenterY),

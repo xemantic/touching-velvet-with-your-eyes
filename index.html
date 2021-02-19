@@ -313,7 +313,8 @@ this.j);b.framebufferTexture2D(b.FRAMEBUFFER,b.COLOR_ATTACHMENT0,b.TEXTURE_2D,th
       input.min = minValue;
       input.max = maxValue;
       input.step = "any";
-      value = initialValue;
+      input.value = initialValue;
+      input.defaultValue = initialValue;
       input.oninput = () => {
         const value = input.value;
         updater(input.value);
@@ -546,6 +547,7 @@ this.j);b.framebufferTexture2D(b.FRAMEBUFFER,b.COLOR_ATTACHMENT0,b.TEXTURE_2D,th
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-direction: column;
     }
 
     #controls {

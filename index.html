@@ -169,7 +169,8 @@ this.j);b.framebufferTexture2D(b.FRAMEBUFFER,b.COLOR_ATTACHMENT0,b.TEXTURE_2D,th
 
       vec2 stShift = vec2(0);
       stShift += iFeedbackZoomRate * (st - iFeedbackZoomCenter);
-      stShift += (colorShift.rg - .4) * iFeedbackColorShiftImpact * vec2(sin(iTime * .3), cos(iTime * .3) * (1. + fft * 6.));
+      stShift += (colorShift.rg - .4) * iFeedbackColorShiftImpact * vec2(sin(iTime * .3), cos(iTime * .3));
+      stShift += (colorShift.gb - .4) * (1. + fft) * st * - .002;
       stShift += iFeedbackShiftVector;
       stShift *= iScreenRatioHalf;
 
@@ -205,7 +206,7 @@ this.j);b.framebufferTexture2D(b.FRAMEBUFFER,b.COLOR_ATTACHMENT0,b.TEXTURE_2D,th
     uniform sampler2D iChannel0;
     uniform sampler2D iChannel1;
 
-    const float PI = 3.14159265359;
+    const float PI = 3.14159265358979323846;
 
     void main(){
       vec2 st = (gl_FragCoord.xy * 2. - iResolution) / iMinDimension;
@@ -228,14 +229,51 @@ this.j);b.framebufferTexture2D(b.FRAMEBUFFER,b.COLOR_ATTACHMENT0,b.TEXTURE_2D,th
     const FREQUENCY_BIN_COUNT = 512;
     const freqData = new Uint8Array(FREQUENCY_BIN_COUNT);
     const waveData = new Uint8Array(FREQUENCY_BIN_COUNT);
+    waveData.fill(127); // wave data is oscillating over byte-middle
     const audioPixels = new Uint8Array(FREQUENCY_BIN_COUNT * 2 * 4);
+
+    function setAudioPixels(yoffset, data) {
+      let offset = (yoffset * FREQUENCY_BIN_COUNT * 4);
+      for (let i = 0; i < FREQUENCY_BIN_COUNT; i++) {
+        const value = data[i];
+        for (let j = 0; j < 3; j++) {
+          audioPixels[offset++] = value;
+        }
+        audioPixels[offset++] = 255;
+      }
+    }
+
+    function updateAudioPixels() {
+      setAudioPixels(0, freqData);
+      setAudioPixels(1, waveData);
+    }
+
+    updateAudioPixels();
 
     let analyser;
     let audioTexture;
 
+    function updateAudioTexture(gl) {
+      if (!analyser) {
+        return;
+      }
+      analyser.getByteFrequencyData(freqData);
+      analyser.getByteTimeDomainData(waveData);
+      updateAudioPixels();
+
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, audioTexture);
+      gl.texSubImage2D(
+        gl.TEXTURE_2D, 0, 0, 0, FREQUENCY_BIN_COUNT, 2, gl.RGBA, gl.UNSIGNED_BYTE, audioPixels
+      );
+      gl.bindTexture(gl.TEXTURE_2D, null);
+    }
+
+
     function initAudio() {
       const playAction = document.getElementById("play-action");
       const audio = document.getElementById("audio-track");
+      const audioFile = document.getElementById("audio-file");
       audio.addEventListener("play", (event) => {
         if (!analyser) {
           const context = new (window.AudioContext || window.webkitAudioContext)();
@@ -249,6 +287,12 @@ this.j);b.framebufferTexture2D(b.FRAMEBUFFER,b.COLOR_ATTACHMENT0,b.TEXTURE_2D,th
         playAction.remove();
         audio.play();
       }
+      audioFile.onchange = (event) => {
+        const file = URL.createObjectURL(audioFile.files[0]);
+        console.log(event);
+        audio.src = file;
+        audio.play();
+      };
     }
 
     function initAudioTexture(gl) {
@@ -272,33 +316,6 @@ this.j);b.framebufferTexture2D(b.FRAMEBUFFER,b.COLOR_ATTACHMENT0,b.TEXTURE_2D,th
       gl.bindTexture(gl.TEXTURE_2D, null);
     }
 
-    function setAudioTexture(yoffset, data) {
-      let offset = (yoffset * FREQUENCY_BIN_COUNT * 4);
-      for (let i = 0; i < FREQUENCY_BIN_COUNT; i++) {
-        const value = data[i];
-        for (let j = 0; j < 3; j++) {
-          audioPixels[offset++] = value;
-        }
-        audioPixels[offset++] = 255;
-      }
-    }
-
-    function updateAudioTexture(gl) {
-      if (!analyser) {
-        return;
-      }
-      analyser.getByteFrequencyData(freqData);
-      analyser.getByteTimeDomainData(waveData);
-      setAudioTexture(0, freqData);
-      setAudioTexture(1, waveData);
-
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, audioTexture);
-      gl.texSubImage2D(
-        gl.TEXTURE_2D, 0, 0, 0, FREQUENCY_BIN_COUNT, 2, gl.RGBA, gl.UNSIGNED_BYTE, audioPixels
-      );
-      gl.bindTexture(gl.TEXTURE_2D, null);
-    }
 
     const controlsTable = document.createElement("table");
 
@@ -353,6 +370,9 @@ this.j);b.framebufferTexture2D(b.FRAMEBUFFER,b.COLOR_ATTACHMENT0,b.TEXTURE_2D,th
 
     let drawCenterX;
     let drawCenterY;
+    let drawIntensity;
+
+    let feedbackZoomRate;
 
     const GOLDEN_RATIO = .61803398875;
     const feedbackMouseShiftFactor = .001;
@@ -377,12 +397,12 @@ this.j);b.framebufferTexture2D(b.FRAMEBUFFER,b.COLOR_ATTACHMENT0,b.TEXTURE_2D,th
 
     let feedbackFadeRate;
 
-    addControl("blob color pulse speed",  .07,    0.01,   .1, (v) => { blobColorPulseSpeed = v });
+    addControl("blob color pulse speed",  .07,    0.01,   1., (v) => { blobColorPulseSpeed = v });
     addControl("draw center X",           0,      -1,     1,  (v) => { drawCenterX = v });
     addControl("draw center Y",           0,      -1,     1,  (v) => { drawCenterY = v });
+    addControl("draw intensity",          .012,   .001,   .1,  (v) => { drawIntensity = v });
     addControl("feedback fade rate",      .9999,  .99,    1., (v) => { feedbackFadeRate = v });
-
-
+    addControl("feedback zoom rate",      .0004,  .0001,  .01, (v) => { feedbackZoomRate = v });
 
     shaderWebBackground.shade({
       onInit: (ctx) => {
@@ -411,15 +431,7 @@ this.j);b.framebufferTexture2D(b.FRAMEBUFFER,b.COLOR_ATTACHMENT0,b.TEXTURE_2D,th
         time = performance.now() / 1000;
         const scrollY = window.scrollY;
         const scrollYDelta = scrollY - oldScrollY;
-        if (scrollYDelta === 0) {
-          feedbackShiftVectorY = 0;
-        } else {
-          feedbackShiftVectorY =
-            scrollYDelta / minDimension
-            * 2 * ctx.cssPixelRatio
-            * backgroundParallaxScrollingFactor;
-          drawCenterY += feedbackShiftVectorY;
-        }
+        feedbackShiftVectorY = 0;
         oldScrollY = scrollY;
         if (tiltFBDelta) { // we have device orientation readings, better than mouse
           feedbackShiftVectorX = tiltLR * feedbackTiltShiftFactor;
@@ -438,13 +450,13 @@ this.j);b.framebufferTexture2D(b.FRAMEBUFFER,b.COLOR_ATTACHMENT0,b.TEXTURE_2D,th
             iMinDimension:             (gl, loc) => gl.uniform1f(loc, minDimension),
             iScreenRatioHalf:          (gl, loc) => gl.uniform2f(loc, screenRatioHalfX, screenRatioHalfY),
             iFeedbackZoomCenter:       (gl, loc) => gl.uniform2f(loc, 0, 0),
-            iFeedbackZoomRate:         (gl, loc) => gl.uniform1f(loc, .0004),
+            iFeedbackZoomRate:         (gl, loc) => gl.uniform1f(loc, feedbackZoomRate),
             iFeedbackShiftVector:      (gl, loc) => gl.uniform2f(loc, feedbackShiftVectorX, feedbackShiftVectorY),
             iFeedbackFadeRate:         (gl, loc) => gl.uniform1f(loc, feedbackFadeRate),
             iFeedbackColorShiftZoom:   (gl, loc) => gl.uniform1f(loc, .07),
             iFeedbackColorShiftImpact: (gl, loc) => gl.uniform1f(loc, .003),
             iDrawCenter:               (gl, loc) => gl.uniform2f(loc, drawCenterX, drawCenterY),
-            iDrawIntensity:            (gl, loc) => gl.uniform1f(loc, .012),
+            iDrawIntensity:            (gl, loc) => gl.uniform1f(loc, drawIntensity),
             iBlobRadius:               (gl, loc) => gl.uniform1f(loc, blobRadius),
             iBlobSmoothingRadius:      (gl, loc) => gl.uniform1f(loc, blobSmoothingRadius),
             iBlobPowFactor:            (gl, loc) => gl.uniform1f(loc, 14.),
@@ -466,9 +478,6 @@ this.j);b.framebufferTexture2D(b.FRAMEBUFFER,b.COLOR_ATTACHMENT0,b.TEXTURE_2D,th
             iChannel1:                 (gl, loc, ctx) => ctx.texture(loc, audioTexture)
           }
         }
-      },
-      onAfterFrame: () => {
-        drawCenterY *= drawCenterShiftDownScale;
       },
       onError: (error, canvas) => {
         document.documentElement.classList.add("fallback-background");
@@ -532,15 +541,6 @@ this.j);b.framebufferTexture2D(b.FRAMEBUFFER,b.COLOR_ATTACHMENT0,b.TEXTURE_2D,th
     header h1 {
       font-size: 3em;
     }
-    header input {
-      font-size: 2em;
-      margin: 1.3em;
-      border: .05em solid;
-    }
-    header input:hover {
-      animation: shake 0.5s;
-      animation-iteration-count: infinite;
-    }
     footer {
       text-align: center;
       min-height: 5rem;
@@ -577,6 +577,12 @@ this.j);b.framebufferTexture2D(b.FRAMEBUFFER,b.COLOR_ATTACHMENT0,b.TEXTURE_2D,th
       width: 100%;
     }
 
+    input {
+      font-size: 1em;
+      margin: 1.3em;
+      border: .05em solid;
+    }
+
     .slider {
       width: 100%;
     }
@@ -591,6 +597,7 @@ this.j);b.framebufferTexture2D(b.FRAMEBUFFER,b.COLOR_ATTACHMENT0,b.TEXTURE_2D,th
     <audio id="audio-track" controls loop>
       <source src="media/Igorrr_and_Ruby_My_Dear-Cuisse.mp3" type="audio/mpeg">
     </audio>
+    <input id="audio-file" type="file" accept="audio/*" />
   </section>
   <footer>
     Music by <a href="https://igorrr.com/">Igorrr</a> and
